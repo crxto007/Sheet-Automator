@@ -46,7 +46,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         job_data.get("deadline", "Not found"),
         "No",
         "Pending",
-        job_data.get("Application Url", "No description found")
+        url
     ]
     
     try:
