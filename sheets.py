@@ -31,7 +31,7 @@ def get_sheet():
 def append_job_row(data):
     """
     Appends a new row to the Google Sheet.
-    data: List of values [Company, Program/Role, Deadline, Applied?, Status, Job Description]
+    data: List of values [Company, Program/Role, Deadline, Applied?, Status, Application Url]
     """
     sheet = get_sheet()
     sheet.append_row(data)
