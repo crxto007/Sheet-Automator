@@ -1,0 +1,6 @@
+python-telegram-bot
+gspread
+groq
+beautifulsoup4
+requests
+python-dotenv
