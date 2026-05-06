@@ -1,6 +1,7 @@
 import gspread
 from google.oauth2.service_account import Credentials
 import os
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -11,11 +12,18 @@ def get_sheet():
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
-    
-    # Authenticate using the service account credentials.json
-    creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
+
+    # Authenticate using the service account
+    # Prioritize environment variable for deployment (Railway), fallback to file for local
+    creds_json = os.getenv("GOOGLE_CREDENTIALS_JSON")
+    if creds_json:
+        info = json.loads(creds_json)
+        creds = Credentials.from_service_account_info(info, scopes=scope)
+    else:
+        creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
+
     client = gspread.authorize(creds)
-    
+
     # Open the sheet by its ID from the .env file
     sheet_id = os.getenv("GOOGLE_SHEET_ID")
     return client.open_by_key(sheet_id).get_worksheet(0)
