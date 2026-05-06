@@ -4,3 +4,4 @@ groq
 python-dotenv
 scrapling
 httpx
+curl_cffi
