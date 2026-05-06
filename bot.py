@@ -55,7 +55,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"✅ Added to sheet!\n\n"
             f"🏢 *Company*: {row[0]}\n"
             f"🎓 *Role*: {row[1]}\n"
-            f"📅 *Deadline*: {row[2]}"
+            f"📅 *Deadline*: {row[2]}\n"
+            f"🔗 *URL*: {row[5]}"
         )
         await update.message.reply_text(confirmation, parse_mode="Markdown")
     except Exception as e:
