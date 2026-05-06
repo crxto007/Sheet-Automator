@@ -1,30 +1,38 @@
-import requests
-from bs4 import BeautifulSoup
+import re
+import httpx
+from scrapling.fetchers import Fetcher
+from scrapling.parser import Selector
 
-def scrape_url(url):
-    """
-    Fetches a URL and returns clean text content.
-    """
+def scrape_url(url: str) -> str:
     try:
-        # Set a User-Agent to avoid being blocked by some websites
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        }
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
-        # Remove elements that typically don't contain useful job info
-        for element in soup(["script", "style", "nav", "footer", "header", "aside"]):
-            element.decompose()
-            
-        # Extract text and clean up whitespace
-        text = soup.get_text(separator=" ")
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-        clean_text = " ".join(lines)
-        
-        return clean_text
+        if "linkedin.com/jobs/view" in url:
+            return _scrape_linkedin(url)
+        return _scrape_normal(url)
     except Exception as e:
         print(f"Scraping error: {e}")
         return None
+
+
+def _scrape_linkedin(url: str) -> str:
+    job_id = re.search(r'/jobs/view/(\d+)', url)
+    if not job_id:
+        raise ValueError("Could not extract LinkedIn Job ID from URL")
+
+    api_url = f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id.group(1)}"
+    headers = {"User-Agent": "Mozilla/5.0"}
+
+    response = httpx.get(api_url, headers=headers, timeout=15)
+    response.raise_for_status()
+
+    page = Selector(response.text)
+    return page.get_text(strip=True)
+
+
+def _scrape_normal(url: str) -> str:
+    page = Fetcher.get(url, stealthy_headers=True, timeout=15)
+    text = page.get_text(strip=True)
+
+    if len(text) < 300:
+        raise ValueError(f"Page returned too little text ({len(text)} chars)")
+
+    return text
